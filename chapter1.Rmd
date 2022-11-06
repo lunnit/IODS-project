@@ -9,5 +9,12 @@
 date()
 
 ```
-The text continues here.
+The text continues here.    
+The course seems to be quite packed with learning outcomes. I hope I have enough time to complete the whole course.    
+R’s recommended syntax has changed since I took a basic course on the topic, and it seems that an update to my skills is rather needed as conventions have changed quite a bit.  
+the **R for Health Data Science** book seems to be good material to keep at hand even after finishing this course. However, the first sections about summarising the data could have had more exercises in them as that is something I have found a tad bit difficult when using R earlier. Especially as notations _%<%_ and _mutation_ are new to me, I think I need to practice using them more.    
+ On the other hand, drawing graphs with R is usually quite fun. Graphs are so malleable compared to some other statistical programs.   
+ 
+ [link to GitHub](https://github.com/lunnit/IODS-project)
+
 
