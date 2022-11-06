@@ -1,6 +1,6 @@
 ---
 title: "IODS course project"
-author: "Kaisa"
+author: "lunnit"
 output:
   html_document:
     theme: cosmo
