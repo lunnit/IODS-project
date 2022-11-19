@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 title: "IODS course project"
 author: "lunnit"
@@ -33,4 +34,3 @@ output:
 # This will include Chapter 3 (that is updated in its own file) in the document.
 
 ```
-
