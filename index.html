@@ -316,17 +316,23 @@ overflow-y: auto;
 border: 1px solid #ddd;
 border-radius: 4px;
 }
-.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-content: "\e259";
+.tabset-dropdown > .nav-tabs > li.active:before {
+content: "";
 font-family: 'Glyphicons Halflings';
 display: inline-block;
 padding: 10px;
 border-right: 1px solid #ddd;
 }
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-content: "\e258";
-font-family: 'Glyphicons Halflings';
+content: "";
 border: none;
+}
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+content: "";
+font-family: 'Glyphicons Halflings';
+display: inline-block;
+padding: 10px;
+border-right: 1px solid #ddd;
 }
 .tabset-dropdown > .nav-tabs > li.active {
 display: block;
@@ -388,6 +394,8 @@ set</a></li>
 model</a></li>
 <li><a href="#diagnostics" id="toc-diagnostics">Diagnostics</a></li>
 </ul></li>
+<li><a href="#assigment-3-logistic-regression" id="toc-assigment-3-logistic-regression">Assigment 3: logistic
+regression</a></li>
 </ul>
 </div>
 
@@ -403,7 +411,7 @@ use R Markdown syntax.</em></p>
 <pre class="r"><code># This is a so-called &quot;R chunk&quot; where you can write R code.
 
 date()</code></pre>
-<pre><code>## [1] &quot;Mon Nov 14 22:29:46 2022&quot;</code></pre>
+<pre><code>## [1] &quot;Sat Nov 19 14:46:31 2022&quot;</code></pre>
 <p>The text continues here.<br />
 The course seems to be quite packed with learning outcomes. I hope I
 have enough time to complete the whole course.<br />
@@ -434,15 +442,18 @@ writing and reading R code as well as statistical methods.</li>
 advanced methods you are using.</li>
 </ul>
 <pre class="r"><code>date()</code></pre>
-<pre><code>## [1] &quot;Mon Nov 14 22:29:47 2022&quot;</code></pre>
+<pre><code>## [1] &quot;Sat Nov 19 14:46:31 2022&quot;</code></pre>
 <pre class="r"><code>#installing libraries:
 library(ggplot2)
 library(GGally)</code></pre>
+<pre><code>## Warning: package &#39;GGally&#39; was built under R version 4.2.2</code></pre>
 <pre><code>## Registered S3 method overwritten by &#39;GGally&#39;:
 ##   method from   
 ##   +.gg   ggplot2</code></pre>
 <pre class="r"><code>library(car)</code></pre>
+<pre><code>## Warning: package &#39;car&#39; was built under R version 4.2.2</code></pre>
 <pre><code>## Loading required package: carData</code></pre>
+<pre><code>## Warning: package &#39;carData&#39; was built under R version 4.2.2</code></pre>
 <pre class="r"><code>#getting the data
 lrn14 &lt;- read.table(&quot;https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/learning2014.txt&quot;, sep=&quot;,&quot;, header=TRUE)</code></pre>
 <div id="background-info-on-the-data-set" class="section level2">
@@ -700,6 +711,9 @@ but the weaknesses should be openly discussed if used.</p>
 <p>(more chapters to be added similarly as we proceed with the
 course!)</p>
 </div>
+</div>
+<div id="assigment-3-logistic-regression" class="section level1">
+<h1>Assigment 3: logistic regression</h1>
 </div>
 
 
