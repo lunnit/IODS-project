@@ -1,1 +1,224 @@
 # Assignment 3: logistic regression
+
+```{r}
+#libraries
+library(boot)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(readr)
+
+#getting the data
+alc <- read.csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/alc.csv", sep=",", header=TRUE)
+
+colnames(alc)
+
+#table(alc$sex)
+#table(alc$age)
+
+```
+## A brief description of the data set 
+
+This time our practice data set concerns student achievement in secondary education in Portugal. The size of the data is 370 and there are 35 variables. The current data set is a combination of two data sets that have information on student performance in two different subjects.
+There are 195 female and 175 male students. The students are 15-22 years old. 
+
+
+The variables in the data set concern demographics, grades, students' social life and school-related factors. Background variables include variables like gender, age, parental socioeconomic status (measured with employment and education) and the size of the family. Grades are students' grades in maths or Portuguese in different periods. Variables related to social life for example deal with students’ free time, their relationships with their friends and family and with their alcohol consumption. School-related variables depict for instance extra-curricular activities, weekly study time and class failures. 
+
+
+## Hypotheses
+
+Our task this week is to analyse alcohol consumption of the students. We were to choose four explanatory variables which we found interesting. I chose gender, family support, going out with friends and absences from classes. and the choice was based on my gut feeling instead of extensive research of previous studies as it would be done in actual research. 
+
+My hypotheses are:
+
+1.	Being male is associated with higher alcohol consumption. 
+
+2.	Going out with friends more often is associated with higher alcohol consumption. 
+
+3.	A higher level of family support in education is associated with lower alcohol consumption.
+
+4.	A higher number of absences is associated with higher alcohol consumption
+
+
+## Graphical examination of the data. 
+
+The outcome variable is a dichotomous Boolean variable. In this case, “TRUE” indicates high alcohol consumption and “FALSE” indicates low alcohol consumption. 70 % of the students (n =259)  fall in the low consumption category and 30 % of the students use alcohol often (n = 111). 
+
+```{r}
+table(alc$high_use)
+prop.table(table(alc$high_use))
+
+```
+The gender distribution of the data is rather even: there are 196 female students and 175 male students. 
+
+When it comes to gender, approximately 60 % of people in the high consumption category are male. On the other hand, this trend seems to be reversed in the low consumption category: circa 60 % of the people belonging to that category are female.  Therefore it seems that the male gender could be associated with a higher level of alcohol consumption.
+
+In addition to examining the distributions, I tested this assumption with Pearson’s chi-squared test.  Pearson’s chi-squared tells tests whether two variables are independent in a given population. Basically, the test is a similar way to examine possible associations between variables categorical as looking for correlation is for continuous variables.
+ 
+In this case, the p-value is highly significant. In other words, the test supports the assumption that gender and alcohol consumption are associated.   
+
+
+```{r}
+#gender
+alc %>% group_by(sex) %>% summarise(count = n())
+#alc %>% group_by(sex, high_use) %>% summarise(count =n())
+
+table(alc$high_use, alc$sex)
+
+alc %$% 
+  table(high_use, sex) %>%
+  prop.table(margin =1)
+
+
+alc %$%       
+  table(high_use, sex) %>% 
+  chisq.test()
+
+```
+
+The next variable is family support which depicts whether the family support the student's in their educational pursuit. It is a binary variable as well with simple “yes” and “no” categories. A bit over 60 % of the students have a family that supports them.  
+
+This time, in addition to tables, I plotted family support and alcohol consumption in two ways. The first plot depicts actual cases (counts) and the second deals with proportions. The plot presenting proportions indicates that there is either a rather small difference or no difference at all in alcohol consumption between students whose family supports them or not. Additionally, Pearson’s test supports this interpretation. In other words, family support does not seem to be associated with alcohol consumption. 
+ 
+
+```{r}
+#family support
+
+table(alc$famsup)
+prop.table(table(alc$famsup))
+
+with(alc, table(high_use, famsup))
+
+alc %$% 
+  table(high_use, famsup) %>%
+  prop.table(margin =1)
+
+
+p1 <- alc %>%
+  ggplot(aes(x=famsup, fill=high_use)) + 
+  geom_bar()
+ 
+p2 <- alc %>% 
+  ggplot(aes(x = famsup, fill = high_use)) + 
+  geom_bar(position = position_fill(reverse = TRUE)) + 
+  ylab("proportion")
+p1
+p2
+
+
+alc %$% 
+  table(high_use, famsup) %>%
+  prop.table(margin =1)
+
+alc %$%       
+  table(high_use, famsup) %>% 
+  chisq.test()
+
+```
+
+The third variable concerns social life: it measures how often students go out with their friends. This is asked with a scale from 1 to 5 where 1 means that they go rarely out and 5 means that they do this really often.  
+
+Plotting seems to be the best choice as there are five categories in this variable. There are again two plots: one with counts and one with proportions. It seems that a larger proportion of students, who go out with their friends regularly, uses also alcohol more. 
+Again Pearson’s chi-squared test supports that claim with a highly significant p-value. 
+
+
+
+```{r}
+
+#going out
+
+alc %>% group_by(goout) %>% summarise(count = n())
+
+#with(alc, table(high_use, goout))
+
+#alc %$% 
+#  table(high_use, goout) %>%
+#  prop.table(margin =1)
+
+
+p1 <-alc %>% 
+  ggplot(aes(x = goout, fill = high_use)) + 
+  geom_bar(position = position_stack(reverse = TRUE)) 
+
+p2 <- alc %>% 
+  ggplot(aes(x = goout, fill = high_use)) + 
+  geom_bar(position = position_fill(reverse = TRUE)) + 
+  ylab("proportion")
+
+
+p1 
+p2
+
+
+alc %$%       
+  table(high_use, goout) %>% 
+  chisq.test()
+
+```
+
+The last variable deals with absences from classes. According to the data set’s description, it’s a numeric value from 0 to 93. However, a closer look at the variable shows that the actual biggest value is 45. Additionally, the variable’s mean is 4,51 and the median is 3. In the other words, the variable is rather skewed to the left.  
+A graphical examination confirms this as well. If this was an actual study, this should be addressed. For example, the variable could be capped at 15 absences and everything over that could be considered outliers. However, as this is a practice assignment, I won't do that now. 
+
+A boxplot graph shows that the students who use more alcohol have slightly more absences as well. This supports the hypothesis. However, as the variable is so skewed, the results should be interpreted carefully. 
+
+
+```{r}
+#absences
+
+mean (alc$absences)
+median(alc$absences)
+
+alc %>%
+  ggplot(aes(x=absences)) +
+  geom_histogram(bins=30)
+    
+  
+a2 <- ggplot(alc, aes(x = high_use, y = absences))
+a2 + geom_boxplot() + ylab("absences")
+
+
+```
+
+
+## Logistic regression 
+
+The next step is to finally fit the model. We use logistic regression as the outcome variable is binary.  Also, if the outcome variable has more than two categories, ordinal regression models are recommended. Both model types are examples of generalised linear modelling.  This section concentrates on giving a brief explanation of interpreting a logistic regression model.
+
+When it comes to logistic regression, coefficients are usually presented as odds ratios. In comparison to probability, odds are practically an alternative to present the likelihood of a particular event. Probabilities are often preferred as people find them easier to interpret. However, in the case of logistic regression, odds are more useful due to their mathematical properties and the logarithmic function of the regression.  
+
+Odds have a close relation to probability: odds are the probability of the event occurring divided by the probability of the event not occurring. In mathematical terms odds are p/p-1.  
+
+If explained in a bit simplified way, it could be said that the coefficients of logistic regression are usually presented as odds ratios. Odds ratios compare the odds of the outcome within the predictors. For example, in the case of alcohol consumption and gender, the odds ratio would be women's odds of high consumption divided by men's odds of high alcohol consumption. 
+
+Interpreting the results shows us the usefulness of using odds ratios instead of probabilities. Due to the logarithmic nature of logistic regression, the coefficients are presented as log-odds if not transformed into odds ratios. Moreover, log-odds are difficult to interpret in any meaningful way. However, with odds ratios, this is rather simple. If the ratio is one, then the odds are the same and there is no difference for instance in alcohol consumption between genders. If the odds ratio is below 1, women's odds of high alcohol consumption are lower than men's, as men were the reference group in this example.  In layman’s terms, this would practically mean that women use less alcohol than men. Lastly, if the odds ratio is over 1, women's odds to use alcohol are higher than men's and therefore they use more alcohol than men.   
+   
+
+```{r}
+#fitting the model
+m <- glm(high_use ~ sex + famsup +goout + absences, data = alc, family = "binomial")
+summary (m)
+# computing odds ratios (OR)
+OR <- coef(m) %>% exp
+
+# computing confidence intervals (CI)
+CI <- confint(m) %>% exp
+
+# printing out the odds ratios with their confidence intervals
+cbind(OR, CI)
+
+```
+The results of logistic regression are presented in the table above. 
+
+Men have an odds ratio of 2.77 compared to women. Men’s likelihood of drinking a high amount of alcohol is over two times higher than women’s likelihood.  The result is highly statistically significant. 95 % confidence intervals are 1.66 -- 4.67. The actual value of the odds ratio is therefore most likely found within this interval. This means that men’s likelihood to consume high amounts of alcohol is at least 1.66 times higher than women’s. At the same time, the likelihood can be as high as over 4.5 times higher than women’s likelihood. Therefore, the results support my initial hypothesis: it seems to be more probable for men than women to drink a high amount of alcohol.         
+
+
+The second explanatory variable in the mode is family support. The reference category is no family support and the odds ratio is 0.97. This would mean that students with supportive families have lower odds to drink a high amount of alcohol. However, in this case, the difference between the two groups is not statistically significant.  This is reflected in the confidence intervals as well. The lower bound is 0.58 and the upper bound is 1.64.  Hence, the odds ratio can be below or above one meaning that the likelihood to drink much can be higher or lower than the reference category’s likelihood to consume high amounts of alcohol. Consequently, family support does not seem to predict alcohol consumption. 
+
+Thirdly, there is going out with friends. The odds ratio is 2.07 with a confidence interval of [1.64 – 2.64]. Therefore the students who go out more with their friends have a higher likelihood to consume high amounts of alcohol. The result supports my initial hypothesis.  
+
+Lastly, absences from classes have an odds ratio of 1.09. The lower bound of the confidence interval is 1.04 and the upper bound is 1.14. Therefore more absences seem to increase the likelihood of drinking high amounts of alcohol. However, 1.09 is a rather weak association. the association might have been stronger had I removed the outliers.  On the other hand, the association found can also be a result of the outliers. As mentioned when visually examining the variable, if this was a real study, the distribution of this variable should be addressed as it is not suitable for a predictor in its current form.  
+
+## 
+
+
