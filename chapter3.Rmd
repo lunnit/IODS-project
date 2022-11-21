@@ -219,6 +219,43 @@ Thirdly, there is going out with friends. The odds ratio is 2.07 with a confiden
 
 Lastly, absences from classes have an odds ratio of 1.09. The lower bound of the confidence interval is 1.04 and the upper bound is 1.14. Therefore more absences seem to increase the likelihood of drinking high amounts of alcohol. However, 1.09 is a rather weak association. the association might have been stronger had I removed the outliers.  On the other hand, the association found can also be a result of the outliers. As mentioned when visually examining the variable, if this was a real study, the distribution of this variable should be addressed as it is not suitable for a predictor in its current form.  
 
-## 
+## Predictive power of the model
+
+
+```{r}
+m2 <- glm(high_use ~ sex + goout + absences, data = alc, family = "binomial")
+
+alc <- mutate(alc, probability = predict(m2, type = "response"))
+alc <- mutate(alc, prediction = probability > 0.5)
+
+#confusion matrix
+table(high_use = alc$high_use, prediction = alc$prediction)
+
+g <- ggplot(alc, aes(x = probability, y = high_use, col=prediction))
+g + geom_point()
+
+
+addmargins(prop.table(table(high_use = alc$high_use, prediction = alc$prediction)))
+
+
+loss_func <- function(class, prob) {
+  n_wrong <- abs(class - prob) > 0.5
+  mean(n_wrong)
+}
+
+loss_func(class = alc$high_use, prob = 0)
+loss_func(class = alc$high_use, prob = 1)
+
+```
+In this section, we are evaluating the previous model and examining its predictive power. As the instruction told us to use variables that “had a statistical relationship with high/low alcohol consumption”, I removed family support from the model because it was not statistically significantly associated with alcohol consumption. Therefore the model I’m using here has only gender, going out and absences from classes as its explanatory variables. 
+
+The confusion matrix examines the specificity and sensitivity of the model. Sensitivity refers to the rate at which the model categorises truly positive values as positive. Similarly, specificity refers to the model's ability to identify true negatives as negative values.  As we are talking about logistic regression positive values usually refers to the outcome happening. In this case, this refers to high alcohol consumption and negative values refer to low alcohol consumption. There is always a trade-off between these two as higher sensitivity usually means lower specificity and vice versa.  
+
+Crosstabulation of the predicted values and actual values shows us that the model falsely predicts high alcohol consumption in 17 cases and low alcohol consumption in 61 1 cases. Low alcohol consumption was predicted correctly in 242 cases and high alcohol consumption in 50 cases. Hence, it seems that the model has better specificity than sensitivity. 
+Anyway, the model seems to have correctly classified circa 78 % of the cases (true false + true positive: 0.65+0.13*100). Likewise, the training error seems to be circa 22 % (false positives + false negatives: 0.05+ 0.16).  This is far better than a simple guessing strategy. The first way to just guess the classification is to toss a coin as this is a binary variable. Tossing a coin would give us roughly 50 % of correctly and incorrectly classified cases. 
+
+
+```
+
 
 
