@@ -1,31 +1,44 @@
 # Assignment 4: clustering and classification 
 
 ```{r}
-#installing libraries
+#libraries
 library(tidyr)
 library (MASS)
 library(corrplot)
 library(ggplot2)
 ```
 
+## A brief description of the data set
+
+This time we are using data set called “Boston”. This data set concerns housing and housing values in Boston’s suburbs. The data has 506 rows, which in this case mean towns or districts and 14 columns e.g., variables.  The variables describe factors which affect the town's housing values. These include factors like crime rate per capita, the average number of rooms per dwelling, property tax rate, pupil-teacher ratio, distances to a river and closeness to highways.More information about the data can be found here: https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/Boston.html
+
+In this exercise, the main focus will be on the crime rate variable. 
+
 ```{r}
+
 # loading the data
 data("Boston")
 
 # exploring the dataset
 
 str(Boston)
-summary(Boston)
-
-pairs(Boston)
-
+dim(Boston)
 ```
 
-## Description here
+## Visual examination of the data
+
+The next step is again to visualise the data. 
+
+The pairs -plot shows us that the most of variables do not have a nice correlation between them. For example, “chas” is a binary dummy variable describing closeness to the river. Additionally. there are several other rather funny-looking distributions. For instance. variables “rad” and “black” looks a bit like bimodal distribution. Fitting a linear model seem rather difficult according to these plots. 
+
+The next plot highlights correlations between the variables in the data. Our outcome variable of the week, crime rate, seems to have a moderately high positive correlation with property tax rate /tax) and index of accessibility to radial highways (rad).  The strongest positive correlation can be found between rad and tax. The strongest negative correlation is harder to pick out. There are three equally strong competitors: 1. lower status of the population (lstat) and median value of the owner-occupied homes (medv), 2. mean of distances to five Boston employment centres (dis) and proportion of owner-occupied units built prior to 1940 (age)  and 3. mean of distances to five Boston employment centres (dis) and nitrogen oxides concentration (nix). 
 
 
 ```{r}
-#visual examination
+
+summary(Boston)
+
+
 pairs(Boston)
 
 cor_matrix <- cor(Boston) 
@@ -33,16 +46,18 @@ cor_matrix <- cor(Boston)
 cor_matrix %>%
   round(2)
 
-corrplot(cor_matrix, method="circle",)
+#corrplot(cor_matrix, method="circle",)
 
 corrplot(cor_matrix, method="circle", type ="upper",cl.pos = "b", tl.pos = "d", tl.cex = 0.6)
 
 ```
 
 
-## Description here
+## Standardizing the dataset 
+
+Standardizing the data set sets the mean of all variables to zero. After this procedure, the variables are in a more comparable form. In other words, all of the variables are on the same scale after standardizing the data set, so to speak. 
  
-### 4
+
 ```{r}
 # center and standardize variables
 boston_scaled <- scale(Boston)
@@ -51,45 +66,48 @@ summary((boston_scaled))
 
 boston_scaled <- as.data.frame(boston_scaled)
 
-#the new variable
 bins <- quantile(boston_scaled$crim)
 bins
 
-# create a categorical variable 'crime'
+# creating a categorical variable 'crime'
 v<- c("low", "med_low", "med_high", "high")
 crime <- cut(boston_scaled$crim, breaks = bins, include.lowest = TRUE, label=v)
 
 table(crime)
 
-# remove original crim from the dataset
+# removing the original
 boston_scaled <- dplyr::select(boston_scaled, -crim)
 
-# add the new categorical value to scaled data
+# adding the new categorical value to scaled data
 boston_scaled <- data.frame(boston_scaled, crime)
 
-#divide the dataset
+
+
+#dividing the dataset
 
 n <- nrow(boston_scaled)
 
-# choose randomly 80% of the rows
+# choosing randomly 80% of the rows
 ind <- sample(n,  size = n * 0.8)
 
-# create train set
+# creating a train set
 train <- boston_scaled[ind,]
 
-# create test set 
+# creating a test set 
 test <- boston_scaled[-ind,]
 
-# save the correct classes from test data
+# saving the correct classes from test data
 correct_classes <- test$crime
 
-# remove the crime variable from test data
+# removing the crime variable from test data
 test <- dplyr::select(test, -crime)
 
 ```
 
 
-## 5 LDA
+##  Linear discriminant analysis (LDA)
+
+
 ```{r}
 # linear discriminant analysis
 lda.fit <- lda(crime ~ ., data = train)
@@ -161,7 +179,7 @@ km <- kmeans(Boston, centers =3)
 # plot the Boston dataset with clusters
 pairs(Boston, col = km$cluster )
 
-pairs(Boston [6:10], col = km$cluster )
+#pairs(Boston[6:10], col = km$cluster )
 
 
 
@@ -181,9 +199,6 @@ km <- kmeans(Boston, centers = 2)
 
 # plot the Boston dataset with clusters
 pairs(Boston, col = km$cluster)
-
-
-
 
 
 ```

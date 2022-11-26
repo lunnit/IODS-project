@@ -255,7 +255,5 @@ Crosstabulation of the predicted values and actual values shows us that the mode
 Anyway, the model seems to have correctly classified circa 78 % of the cases (true false + true positive: 0.65+0.13*100). Likewise, the training error seems to be circa 22 % (false positives + false negatives: 0.05+ 0.16).  This is far better than a simple guessing strategy. The first way to just guess the classification is to toss a coin as this is a binary variable. Tossing a coin would give us roughly 50 % of correctly and incorrectly classified cases. 
 
 
-```
-
 
 
