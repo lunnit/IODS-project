@@ -107,6 +107,7 @@ test <- dplyr::select(test, -crime)
 
 ##  Linear discriminant analysis (LDA)
 
+Linear discriminant analysis (LDA) is a dimensionality reduction technique. it is commonly used for modelling differences in groups. In this case, it is used to examine crime rates in Boston. 
 
 ```{r}
 # linear discriminant analysis
@@ -134,7 +135,11 @@ lda.arrows(lda.fit, myscale = 2)
 
 ```
 
-#6
+## Predictive power of the model
+
+The model deems to predict the cases correctly quite well. there are eight wrong predictions in the low crime rate category: six of them are predicted in the medium-low and two in the medium-high category. Similarly, there are nine mispredictions in the medium-low category: five in the low and 4 in the medium-high category.  Medium-high predictions seem to be rather inaccurate: in this case, there are predicted values in all of the other categories as well. Lastly, the high crime rate seems to be predicted the most accurately as there is not a single inaccurately predicted case.  
+
+Anyway, depending on the crime rate, the method classified cases correctly from 53 % to 96 % of the cases. 
 
 ```{r}
 # predict classes with test data
@@ -143,29 +148,27 @@ lda.pred <- predict(lda.fit, newdata = test)
 # cross tabulate the results
 table(correct = correct_classes, predicted = lda.pred$class)
 
+round(prop.table(table(correct = correct_classes, predicted = lda.pred$class), margin = 1),2)
+
 ```
 
-#7
+## K-means clustering
+
+K-means clustering is a technique to group data into a fixed number of clusters. This is done with a similarity: data points are clustered to the cluster nearest cluster while keeping the centre of the clusters as small as possible. 
 
 ```{r}
 data("Boston")
 Boston <- scale(Boston)
-#summary(Boston)
-
 
 # euclidean distance matrix
 dist_eu <- dist(Boston)
 
-# look at the summary of the distances
 summary(dist_eu)
 
 # manhattan distance matrix
 dist_man <- dist(Boston, method="manhattan")
 
-# look at the summary of the distances
-#summary(dist_eu)
 summary(dist_man)
-
 
 
 #k-means
@@ -176,22 +179,30 @@ km <- kmeans(Boston, centers =3)
 
 #km$cluster
 
-# plot the Boston dataset with clusters
+# plotting the Boston dataset with clusters
 pairs(Boston, col = km$cluster )
 
 #pairs(Boston[6:10], col = km$cluster )
 
 
+```
+
+The analysis above is done with three clusters and I do not have any justifications for the number of clusters. However, there are means to find out the optimal number of clusters. This is illustrated in the line chart where the optimal amount of clusters is seen as a sudden drop of the line in the chart.  Here it seems to be around two. 
+
+Therefore we are running the k-means again with just two centres. 
+As for interpreting the results, it seems that the characteristics of towns form two “archetypes” which have bit different features. For example, tax rates seem to be different in two clusters.
+
+```{r}
 
 set.seed(123)
 
-# determine the number of clusters
+# determining the number of clusters
 k_max <- 10
 
-# calculate the total within sum of squares
+# calculating the total within sum of squares
 twcss <- sapply(1:k_max, function(k){kmeans(Boston, k)$tot.withinss})
 
-# visualize the results
+# visualizing the results
 qplot(x = 1:k_max, y = twcss, geom = 'line')
 
 # k-means clustering
@@ -199,7 +210,6 @@ km <- kmeans(Boston, centers = 2)
 
 # plot the Boston dataset with clusters
 pairs(Boston, col = km$cluster)
-
 
 ```
 
