@@ -1,0 +1,191 @@
+# Assignment 5. Dimensionality reduction techniques
+
+
+
+```{r} 
+#libraries
+library(dplyr)
+library(tidyr)
+library(corrplot)
+library(GGally)
+library(ggplot2)
+library(FactoMineR)
+        
+#just to be sure I dowloaded the data
+human <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/human2.txt", 
+                    sep =",", header = T)
+
+```
+
+## 1 
+
+```{r}
+#visualising the data
+
+summary(human)
+
+cor(human)
+
+ggpairs(human)
+
+pairs (human [-1],)
+
+cor_matrix <- cor(human) 
+
+cor_matrix %>%
+  round(2)
+
+corrplot(cor_matrix, method="circle", type ="upper",cl.pos = "b", tl.pos = "d", tl.cex = 0.6)
+
+#corrplot(cor_matrix, method= "square", type ="lower",cl.pos = "b", tl.pos = "lt", tl.cex = 0.8)
+
+```
+
+## 2 Principal component analysis (PCA)
+
+
+```{r}
+pca_human <- prcomp(human)
+
+s <- summary(pca_human)
+
+
+biplot(pca_human, choices = 1:2)
+biplot(pca_human, choices = 1:2, cex = c(0.6, 0.9))
+biplot(pca_human, choices = 1:2, cex = c(0.6, 0.9), col = c("grey40", "blue"))
+
+
+pca_pr <- round(1*s$importance[2, ], digits = 2)*100
+# print out the percentages of variance
+pca_pr
+
+# create object pc_lab to be used as axis labels
+paste0(names(pca_pr), " (", pca_pr, "%)")
+
+pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
+pc_lab
+
+# draw a biplot
+
+biplot(pca_human, cex = c(0.8, 1), col = c("grey40", "deeppink2"), xlab = pc_lab[1], ylab = pc_lab[2])
+
+
+```
+
+
+
+## 3 Principal component analysis (PCA) with standardised dataset
+
+```{r}
+
+human_std <- scale(human)
+summary(human_std)
+
+
+pca_human_std <- prcomp(human_std)
+
+s <- summary(pca_human_std)
+
+
+
+biplot(pca_human_std, choices = 1:2)
+biplot(pca_human_std, choices = 1:2, cex = c(0.6, 0.9))
+biplot(pca_human_std, choices = 1:2, cex = c(0.6, 0.9), col = c("grey40", "blue"))
+
+pca_pr <- round(1*s$importance[2, ], digits = 2)*100
+# print out the percentages of variance
+pca_pr
+
+# create object pc_lab to be used as axis labels
+paste0(names(pca_pr), " (", pca_pr, "%)")
+
+pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
+pc_lab
+# draw a biplot
+
+biplot(pca_human_std, cex = c(0.8, 1), col = c("grey40", "deeppink2"), xlab = pc_lab[1], ylab = pc_lab[2])
+
+
+
+
+```
+
+##  4. interpretation here
+
+text here
+
+
+## 5. Multiple Correspondence Analysis
+
+
+```{r}
+#preparing the data
+
+tea <- read.csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/tea.csv", stringsAsFactors = TRUE)
+
+#tea$Tea <- factor(tea$Tea)
+#tea$How <- factor(tea$How)
+#tea$how <- factor(tea$how)
+#tea$sugar <- factor(tea$sugar)
+#tea$where <- factor(tea$where)
+#tea$lunch <- factor(tea$lunch)
+
+
+#View(tea)
+
+```
+
+
+
+```{r}
+#visualising the data
+
+
+library(dplyr)
+library(tidyr)
+# column names to keep in the dataset
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
+
+# select the 'keep_columns' to create a new dataset
+tea_time <- select(tea, one_of(keep_columns))
+
+# look at the summaries and structure of the data
+str(tea_time)
+summary(tea_time)
+
+# visualize the dataset
+library(ggplot2)
+pivot_longer(tea_time, cols = everything()) %>% 
+  ggplot(aes(value)) + facet_wrap("name", scales = "free") +
+ geom_bar() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
+
+
+```
+
+
+```{r}
+#MCA
+
+# multiple correspondence analysis
+mca <- MCA(tea_time, graph = FALSE)
+
+# summary of the model
+mca
+mca$eig
+
+# visualize MCA
+plot(mca, invisible=c("ind"), graph.type = "classic")
+
+plot(mca, invisible=c("ind"), graph.type = "classic", habillage = "quali")
+
+plot(mca, invisible=c("var"), graph.type = "classic")
+
+plot(mca, invisible=c("var"), graph.type = "classic", habillage = "quali")
+
+plot(mca, invisible=c("quanti.sup"), graph.type = "classic")
+
+plot(mca, invisible=c("none"), graph.type = "classic")
+
+```
+
