@@ -1,6 +1,6 @@
 # Assignment 5. Dimensionality reduction techniques
 
-
+## Preparation code for the assignment 
 
 ```{r} 
 #libraries
@@ -11,104 +11,133 @@ library(GGally)
 library(ggplot2)
 library(FactoMineR)
         
-#just to be sure I dowloaded the data
+#just to be sure I downloaded the data
 human <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/human2.txt", 
                     sep =",", header = T)
 
 ```
 
-## 1 
+## Graphical examination of the data
+
+As usual, the first step is to examine the data. Summaries of the variables and correlation matrix are provided, but as usual, the graphical examination is more illuminating and easier to interpret. 
 
 ```{r}
-#visualising the data
-
+#summaries and correlations
 summary(human)
-
-cor(human)
-
-ggpairs(human)
-
-pairs (human [-1],)
 
 cor_matrix <- cor(human) 
 
 cor_matrix %>%
   round(2)
 
-corrplot(cor_matrix, method="circle", type ="upper",cl.pos = "b", tl.pos = "d", tl.cex = 0.6)
+```
 
-#corrplot(cor_matrix, method= "square", type ="lower",cl.pos = "b", tl.pos = "lt", tl.cex = 0.8)
+As can be seen in the graph below, most of the correlations are statistically significant. Additionally, some of the correlations are rather strong. For instance, the correlation between maternal mortality and life expectancy is -0.857. Correlation is generally considered to be strong if its value is larger than 0.7. However, this of course depends on the field of study and in social sciences, it is rather rare to observe correlations above 0.6.  Therefore associations between the variables found in this dataset seem to have quite strong associations. Additionally, most of the distributions are quite linear, GNI and maternal mortality being an exception to this. 
+
+
+```{r}
+#visualising the data
+
+ggpairs(human)
+
+#pairs (human [-1], )
 
 ```
 
-## 2 Principal component analysis (PCA)
+
+The second correlation plot highlights strong correlations in the data making them easier to observe. Only two variables, the percentage of female representation in parliament and the ratio between females and males in the labour force, do not have correlations with any other variables. 
+
+The strongest negative correlation is between the already mentioned life expectancy and maternal mortality. In other words, higher life expectancy is associated with lower maternal mortality. The strongest positive correlations seem to be found between expected years of schooling and life expectancy and between maternal mortality and adolescent birth rate. Hence higher life expectancy is associated with more expected years of schooling and a higher level of maternal mortality is associated with higher maternal mortality. 
+In addition, expected years of schooling is associated with lower maternal mortality and a lower adolescent birth rate. 
+
+
+```{r}
+corrplot(cor_matrix, method="circle", type ="upper",cl.pos = "b", tl.pos = "d", tl.cex = 0.6)
+
+```
+
+
+## Principal component analysis (PCA)
+
+Principal component analysis (PCA) is a method to reduce the dimensionality of the data. This makes it easier to visualise and interpret while preserving the maximum amount of information. In order to do this, the technique transforms most of the variation in the data to fewer dimensions. These dimensions are then called principal components. Generally, the first two new dimensions are used to plot and then interpret the data.
+
+In this case, the PCA is first done to the non-standardised data and then to the standardised version of the same data. 
 
 
 ```{r}
 pca_human <- prcomp(human)
 
 s <- summary(pca_human)
-
-
-biplot(pca_human, choices = 1:2)
-biplot(pca_human, choices = 1:2, cex = c(0.6, 0.9))
-biplot(pca_human, choices = 1:2, cex = c(0.6, 0.9), col = c("grey40", "blue"))
-
+s
+eigenvalues <- s$sdev^2
+eigenvalues
 
 pca_pr <- round(1*s$importance[2, ], digits = 2)*100
 # print out the percentages of variance
 pca_pr
 
-# create object pc_lab to be used as axis labels
+```
+
+The non-standardised data set produces quite interesting results: all variation in the data is assigned to the first principal component. Meaning there is only a single dimension found in the data.  
+
+```{r}
+#visualaising the PCA results
+
 paste0(names(pca_pr), " (", pca_pr, "%)")
 
 pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
-pc_lab
 
-# draw a biplot
-
-biplot(pca_human, cex = c(0.8, 1), col = c("grey40", "deeppink2"), xlab = pc_lab[1], ylab = pc_lab[2])
-
+# drawing a biplot
+biplot(pca_human, cex = c(0.9, 1), col = c("grey40", "blue"), xlab = pc_lab[1], ylab = pc_lab[2])
 
 ```
 
+The biplot has only one arrow, as the PCA did not manage to find more than one dimension (or principal component).  Rstudio also notifies the user about this: “Warning: zero-length arrow is of indeterminate angle and so skipped”. The plot looks a bit funny, but probably standardising the data will help to produce more meaningful results. 
 
 
-## 3 Principal component analysis (PCA) with standardised dataset
+
+## Principal component analysis (PCA) with a standardised dataset
+
+```{r}
+#standardising the data set
+human_std <- scale(human)
+summary(human_std)
+```
+
 
 ```{r}
 
-human_std <- scale(human)
-summary(human_std)
-
-
 pca_human_std <- prcomp(human_std)
-
 s <- summary(pca_human_std)
-
-
-
-biplot(pca_human_std, choices = 1:2)
-biplot(pca_human_std, choices = 1:2, cex = c(0.6, 0.9))
-biplot(pca_human_std, choices = 1:2, cex = c(0.6, 0.9), col = c("grey40", "blue"))
+s
+eigenvalues <- s$sdev^2
+eigenvalues
 
 pca_pr <- round(1*s$importance[2, ], digits = 2)*100
 # print out the percentages of variance
 pca_pr
 
+
+```
+
+This time the PCA seemed to work better: the variation is assigned to several principal components. The first component includes most of the variation: 54 %. The second component has an unmistakably smaller amount of variation: only 16 %. 
+
+```{r}
+#visualaising the PCA results
 # create object pc_lab to be used as axis labels
 paste0(names(pca_pr), " (", pca_pr, "%)")
 
 pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
-pc_lab
-# draw a biplot
 
-biplot(pca_human_std, cex = c(0.8, 1), col = c("grey40", "deeppink2"), xlab = pc_lab[1], ylab = pc_lab[2])
-
-
+# drawing a biplot
+biplot(pca_human_std, cex = c(0.8, 0.9), col = c("grey40", "blue"), xlab = pc_lab[1], ylab = pc_lab[2])
 
 
 ```
+
+Similarly, the biplot seems to be more sensible. The data points (=countries) are centred in the plot and all of the variables have their arrows visible. 
+
+
 
 ##  4. interpretation here
 
@@ -140,14 +169,14 @@ tea <- read.csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open
 ```{r}
 #visualising the data
 
-
-library(dplyr)
-library(tidyr)
 # column names to keep in the dataset
 keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
 
 # select the 'keep_columns' to create a new dataset
-tea_time <- select(tea, one_of(keep_columns))
+tea_time <- tea[keep_columns]
+
+  
+#select(tea, one_of(keep_columns))
 
 # look at the summaries and structure of the data
 str(tea_time)
