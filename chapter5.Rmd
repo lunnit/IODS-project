@@ -1,6 +1,5 @@
 # Assignment 5. Dimensionality reduction techniques
 
-## Preparation code for the assignment 
 
 ```{r} 
 #libraries
@@ -10,6 +9,7 @@ library(corrplot)
 library(GGally)
 library(ggplot2)
 library(FactoMineR)
+library(factoextra)
         
 #just to be sure I downloaded the data
 human <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/human2.txt", 
@@ -69,6 +69,9 @@ pca_human <- prcomp(human)
 
 s <- summary(pca_human)
 s
+
+#pca_human
+
 eigenvalues <- s$sdev^2
 eigenvalues
 
@@ -81,9 +84,9 @@ pca_pr
 The non-standardised data set produces quite interesting results: all variation in the data is assigned to the first principal component. Meaning there is only a single dimension found in the data.  
 
 ```{r}
-#visualaising the PCA results
+#visualising the PCA results
 
-paste0(names(pca_pr), " (", pca_pr, "%)")
+#paste0(names(pca_pr), " (", pca_pr, "%)")
 
 pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
 
@@ -110,22 +113,31 @@ summary(human_std)
 pca_human_std <- prcomp(human_std)
 s <- summary(pca_human_std)
 s
-eigenvalues <- s$sdev^2
-eigenvalues
+
+#Eigenvectors
+pca_human_std
 
 pca_pr <- round(1*s$importance[2, ], digits = 2)*100
 # print out the percentages of variance
 pca_pr
-
 
 ```
 
 This time the PCA seemed to work better: the variation is assigned to several principal components. The first component includes most of the variation: 54 %. The second component has an unmistakably smaller amount of variation: only 16 %. 
 
 ```{r}
-#visualaising the PCA results
-# create object pc_lab to be used as axis labels
-paste0(names(pca_pr), " (", pca_pr, "%)")
+eigenvalues <- s$sdev^2
+eigenvalues
+```
+
+
+Eigenvalues are used to determine the number of principal components. One rule of thumb recommends only using the principal components with eigenvalues that are greater than 1. In this case, the first two principal components fulfill this rule. 
+
+
+```{r}
+#visualising the PCA results
+
+#paste0(names(pca_pr), " (", pca_pr, "%)")
 
 pc_lab <- paste0(names(pca_pr), " (", pca_pr, "%)")
 
@@ -135,39 +147,37 @@ biplot(pca_human_std, cex = c(0.8, 0.9), col = c("grey40", "blue"), xlab = pc_la
 
 ```
 
-Similarly, the biplot seems to be more sensible. The data points (=countries) are centred in the plot and all of the variables have their arrows visible. 
+Similarly, the biplot seems to be more sensible. The data points (=countries) are centered in the plot and all of the variables have their arrows visible. 
+
+The principal component analysis seems to apply an algorithm that assumes the data to be centered before the analysis. Therefore, the results are misleading or even completely wrong if the data is not centered. This is probably the reason why the first version of the analysis produced only one dimension/component. Without standardisation, the results of the first analysis are hence rather nonsensical. 
+
+However, the second analysis produces meaningful results. Maternal mortality and adolescent birth rate are positively associated with the first component. This can be seen in the biplot or from the eigenvectors. It seems that the first component deals with the health of the mother. The second component, on the other hand, is associated positively with the ratio of females and males in the workforce and the ratio of female representation in parliament. Therefore this component seems to be concerned with female participation in public life (as opposed to private life e.g. being a housewife etc.)
 
 
+###  Interpretations of the first two principal components 
 
-##  4. interpretation here
+As mentioned above, the first principal component consists of maternal mortality and the adolescent birth rate which have a positive association with the component. Therefore, I would say that the component deals with the health of mothers. Possibly even ill health as the association is positive and both variables seem to concern negative effects (death and motherhood at a very young age).  
 
-text here
+The second principal component has also to do with women. This time the component has a positive correlation with the ratio of females vs, males in the workforce and the ratio of female representation in parliament. Hence, the second component seems to represent women's attendance in public life: it has to do with women in the working life and the public sphere instead of private life (= at home).  
 
 
-## 5. Multiple Correspondence Analysis
+## Multiple Correspondence Analysis
 
+The next task uses a new dataset. This time the dataset concerns tea and tea-drinking habits. The data has 300 observations (=participants or individuals) and 36 variables. 18 variables concern tea-drinking preferences, 12 with their perception of tea and 4 variables deal with demographics and other personal details. Most of the variables are categorical with two or three levels.  
 
 ```{r}
 #preparing the data
 
 tea <- read.csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/tea.csv", stringsAsFactors = TRUE)
 
-#tea$Tea <- factor(tea$Tea)
-#tea$How <- factor(tea$How)
-#tea$how <- factor(tea$how)
-#tea$sugar <- factor(tea$sugar)
-#tea$where <- factor(tea$where)
-#tea$lunch <- factor(tea$lunch)
-
-
 #View(tea)
-
+str(tea)
+dim(tea)
 ```
 
-
+For this assignment, I decided to use only a small subset of the data. I assume, that interpreting the results is probably easier with a smaller amount of variables.  Therefore I kept six variables that depict tea-drinking habits.  
 
 ```{r}
-#visualising the data
 
 # column names to keep in the dataset
 keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
@@ -175,46 +185,111 @@ keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
 # select the 'keep_columns' to create a new dataset
 tea_time <- tea[keep_columns]
 
-  
-#select(tea, one_of(keep_columns))
 
-# look at the summaries and structure of the data
+#summaries and structure of the data
+dim(tea_time)
 str(tea_time)
 summary(tea_time)
 
-# visualize the dataset
-library(ggplot2)
+```
+
+
+### Visual examination of the data
+
+```{r}
+# visualising the dataset
 pivot_longer(tea_time, cols = everything()) %>% 
   ggplot(aes(value)) + facet_wrap("name", scales = "free") +
  geom_bar() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 8))
 
-
 ```
+The graphs above illustrate the distributions of the variables. In most cases, there is a clear majority in preferences. For example, the most common type of tea seems to be Earl Grey and the most common way to prepare tea seems to be using tea bags. The only variable with almost equal distribution is the usage of sugar. 
 
+### Multiple correspondence analysis
+
+Multiple correspondence analysis (MCA) is a technique to analyse nominal categorical data. It is used to detect and portray underlying structures in a dataset and it resembles PCA. The results of MCA are often represented as a two-dimensional “map”.  
 
 ```{r}
-#MCA
-
 # multiple correspondence analysis
 mca <- MCA(tea_time, graph = FALSE)
 
 # summary of the model
-mca
-mca$eig
+#mca
+#mca$eig
 
 # visualize MCA
 plot(mca, invisible=c("ind"), graph.type = "classic")
-
 plot(mca, invisible=c("ind"), graph.type = "classic", habillage = "quali")
 
+```
+
+The first plot has variables and their levels drawn as clusters within two dimensions. The second plot is otherwise the same, but the levels of the variables share a colour. For example, different tea types are drawn with black ink and the place of purchase uses pink ink.
+
+It seems that unpackaged tea is most often bought from tea shops (no big surprises here). Another cluster is at the top of the plot. It seems to concern flexible or undecided people, depending on your point of view.  The favourite place to buy tea is both chain store and tea shop. Similarly, these people drink both unpackaged tea and tea from tea bags. The third cluster is in the bottom left. here the favoured way to buy tea is tea bags from chain stores. Additionally, this tea is drunk without adding anything. Lastly, it seems that black tea is most often drunk without sugar. 
+
+
+```{r}
 plot(mca, invisible=c("var"), graph.type = "classic")
 
-plot(mca, invisible=c("var"), graph.type = "classic", habillage = "quali")
-
-plot(mca, invisible=c("quanti.sup"), graph.type = "classic")
-
 plot(mca, invisible=c("none"), graph.type = "classic")
+
+```
+
+The next plot has the observations or individuals in it. The plot after that has both individuals and variables.
+
+```{r}
+
+fviz_contrib(mca, choice = "var", axes = 1, top = 15)
+# Contributions of rows to dimension 2
+fviz_contrib(mca, choice = "var", axes = 2, top = 15)
+```
+
+These two plots kinda confirm my previous interpretation. The plots show us how different variables contribute to dimensions one and two.  The first one has a tea shop and unpackaged tea as its main components. Dimension two on the other hand has a chain store + tea shop and tea bag + unpackaged tea as its main contributors. 
+
+The last plots depict the individuals by groups using the levels of the variables. Some of these groupings produce clearer results than the rest. For example, there seems to be a clear division between the place of purchase (“where”). The same applies to the type of tea purchased (bags, unpackaged, both). On the other hand, how the tea is drunk (alone, with lemon, with milk, or other) does not seem to cluster that well. Sugar or no sugar and whether the tea is drunk at lunch have the same issue.  
+
+In conclusion, it seems that the place of purchase and the type of the purchases (tea bags, unpackaged or both) form the clearest cluster in this data. Unsurprisingly, unpackaged tea is often bought from tea shops and tea bags are bought from chain stores. 
+
+```{r}
+fviz_mca_ind(mca, 
+             label = "none", # hide individual labels
+             habillage = "where", # color by groups 
+             palette = c("#00AFBB", "#E7B800", "#8f00ff"),
+             addEllipses = TRUE, ellipse.type = "confidence",
+             ggtheme = theme_minimal()) 
+
+fviz_mca_ind(mca, 
+             label = "none", # hide individual labels
+             habillage = "how", # color by groups 
+             palette = c("#00AFBB", "#E7B800", "#8f00ff"),
+             addEllipses = TRUE, ellipse.type = "confidence",
+             ggtheme = theme_minimal())
+fviz_mca_ind(mca, 
+             label = "none", # hide individual labels
+             habillage = "Tea", # color by groups 
+             palette = c("#00AFBB", "#E7B800", "#8f00ff"),
+             addEllipses = TRUE, ellipse.type = "confidence",
+             ggtheme = theme_minimal()) 
+fviz_mca_ind(mca, 
+             label = "none", # hide individual labels
+             habillage = "sugar", # color by groups 
+             palette = c("#00AFBB", "#8f00ff"),
+             addEllipses = TRUE, ellipse.type = "confidence",
+             ggtheme = theme_minimal()) 
+fviz_mca_ind(mca, 
+             label = "none", # hide individual labels
+             habillage = "How", # color by groups 
+             palette = c("#00AFBB", "#E7B800", "#8f00ff", "#006400"),
+             addEllipses = TRUE, ellipse.type = "confidence",
+             ggtheme = theme_minimal()) 
+fviz_mca_ind(mca, 
+             label = "none", # hide individual labels
+             habillage = "lunch", # color by groups 
+             palette = c("#00AFBB", "#8f00ff"),
+             addEllipses = TRUE, ellipse.type = "confidence",
+             ggtheme = theme_minimal())
+
 
 ```
 
